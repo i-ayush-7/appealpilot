@@ -146,7 +146,7 @@ A public URL means strangers can spend your Token Factory credits. AppealPilot b
 | Live appeals per visitor per hour (samples exempt) | 6 | `RUNS_PER_HOUR` |
 | Letter-reading (intake) calls per visitor per hour | 30 | `INTAKES_PER_HOUR` |
 | Live runs at once; extra runs queue, then fail politely | 2 | `MAX_CONCURRENT_RUNS` |
-| Visitor identity — `X-Forwarded-For` is ignored unless you're behind a proxy | off | `TRUST_PROXY=1` behind a proxy |
+| Visitor identity — forwarded headers are ignored unless you name the trusted one | off | `TRUST_PROXY=cloudflare` on Render, `last`/`first` behind other proxies |
 
 The API key never reaches the browser. Spend tracking lives in `.cache/`; on hosts with ephemeral disks
 it resets on redeploy, so also set a spending limit in Token Factory if your account offers one.

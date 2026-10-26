@@ -118,7 +118,12 @@ _live_runs = asyncio.Semaphore(max(1, settings.max_concurrent_runs))
 
 def _client_ip(request: Request) -> str:
     """The visitor's address. X-Forwarded-For is client-controlled, so it is only used when
-    TRUST_PROXY names the entry our own proxy controls ("first" or "last")."""
+    TRUST_PROXY names what our own proxy controls: "cloudflare" (CF-Connecting-IP, e.g. Render),
+    or the X-Forwarded-For entry it sets ("first" or "last")."""
+    if settings.trust_proxy == "cloudflare":  # Cloudflare overwrites this header, so visitors can't forge it
+        cf = request.headers.get("cf-connecting-ip", "").strip()
+        if cf:
+            return cf
     fwd = [p.strip() for p in request.headers.get("x-forwarded-for", "").split(",") if p.strip()]
     if fwd and settings.trust_proxy == "first":
         return fwd[0]

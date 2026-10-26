@@ -47,7 +47,8 @@ class Settings:
     max_concurrent_runs: int = field(default_factory=lambda: int(os.getenv("MAX_CONCURRENT_RUNS", "2")))
     # Which X-Forwarded-For entry identifies the visitor. Off unless behind a proxy that sets it:
     #   "last" (or "1")  the proxy appends the client IP (nginx, most load balancers)
-    #   "first"          the proxy overwrites the first entry with the client IP (Render)
+    #   "first"          the proxy overwrites the first entry with the client IP
+    #   "cloudflare"     behind Cloudflare: use CF-Connecting-IP, which Cloudflare always overwrites (Render)
     trust_proxy: str = field(default_factory=lambda: {"1": "last", "true": "last", "yes": "last"}.get(
         os.getenv("TRUST_PROXY", "").lower(), os.getenv("TRUST_PROXY", "").lower()))
 

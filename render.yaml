@@ -29,9 +29,10 @@ services:
         value: "30"
       - key: MAX_CONCURRENT_RUNS
         value: "2"
-      # Render's proxy sets the first X-Forwarded-For entry to the real client IP.
+      # Render is fronted by Cloudflare, which overwrites CF-Connecting-IP with the real client IP.
+      # (Verified: a spoofed X-Forwarded-For is kept as-is by Render, so "first"/"last" are unsafe here.)
       - key: TRUST_PROXY
-        value: first
+        value: cloudflare
       - key: PRICE_NANO_IN
         value: "0.06"
       - key: PRICE_NANO_OUT
