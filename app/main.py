@@ -151,7 +151,12 @@ async def sample_prompt(sample_id: str):
     case = P.case_block(stable, clauses, s["records"][:MAX_RECORDS], s["notes"])
     model = router.models.get("super")
     key = router.guard.key(model, P.EVIDENCE_SYSTEM, case, True, False, 2500, 0.3)
-    return {"intake_cached": t.cached, "model": model, "key": key, "case": case}
+    from .llm import SEED_DIR
+
+    seed_file = SEED_DIR / f"{key}.json"
+    return {"intake_cached": t.cached, "model": model, "key": key,
+            "seed_dir": str(SEED_DIR), "seed_files": len(list(SEED_DIR.glob("*.json"))) if SEED_DIR.exists() else -1,
+            "seed_hit": seed_file.exists(), "guard_get": router.guard.get(key) is not None, "case": case}
 
 
 @app.get("/api/whoami")
