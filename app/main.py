@@ -130,7 +130,8 @@ def _client_ip(request: Request) -> str:
 @app.get("/api/whoami")
 async def whoami(request: Request):
     """Echo the caller's own IP as the rate limiter sees it (used to verify proxy settings)."""
-    return {"ip": _client_ip(request), "trust_proxy": settings.trust_proxy or "off"}
+    seen = {h: request.headers.get(h) for h in ("x-forwarded-for", "true-client-ip", "cf-connecting-ip", "x-real-ip") if request.headers.get(h)}
+    return {"ip": _client_ip(request), "trust_proxy": settings.trust_proxy or "off", "headers": seen}
 
 
 def _rate_limit(request: Request, kind: str, per_hour: int, message: str) -> None:
