@@ -144,6 +144,7 @@ async def run_appeal(denial: str, policy: str, records: str, notes: str) -> Asyn
             str(w.get("severity", "")).lower() == "high" for w in review.get("weaknesses") or []
         )
         if score < settings.revise_threshold or must_fix:
+            draft = letter
             yield _event("stage", stage="revise", status="running")
             letter, t = await router.call(
                 "super", "revise", prompts.REVISE_SYSTEM,
@@ -160,6 +161,11 @@ async def run_appeal(denial: str, policy: str, records: str, notes: str) -> Asyn
             )
             yield traced(t)
             rescore["previous_score"] = score
+            # Revisions usually help, but not always. If the reviewer scores the revision lower and
+            # the draft had no factual errors to fix, the better-scoring draft is what ships.
+            if int(rescore.get("score") or 0) < score and not review.get("factual_errors"):
+                letter = draft
+                rescore = {**review, "kept_original": True, "revised_score": rescore.get("score"), "previous_score": score}
             yield _event("stage", stage="rescore", status="done", data=rescore)
         else:
             yield _event("stage", stage="revise", status="skipped")

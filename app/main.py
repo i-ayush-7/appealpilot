@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import io
 import json
 import time
@@ -14,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .config import settings
-from .llm import router, trace_dict
+from .llm import LLMError, router, trace_dict
 from .pipeline import run_appeal, run_intake
 from .samples import SAMPLES, get_sample, sample_summary
 
@@ -111,20 +112,34 @@ async def extract(file: UploadFile = File(...)):
     return {"filename": file.filename, "text": text.strip(), "chars": len(text)}
 
 
-_runs: dict[str, deque] = defaultdict(deque)
+_buckets: dict[tuple[str, str], deque] = defaultdict(deque)
+_live_runs = asyncio.Semaphore(max(1, settings.max_concurrent_runs))
 
 
-def _rate_limit(request: Request) -> None:
-    """Cap live runs per visitor so a public demo can't drain the credit balance."""
-    if not router.live or settings.runs_per_hour <= 0:
+def _client_ip(request: Request) -> str:
+    """The visitor's address. X-Forwarded-For is client-controlled, so it is only used when
+    TRUST_PROXY is set, and then only its last entry (the one our own proxy appended)."""
+    if settings.trust_proxy:
+        fwd = request.headers.get("x-forwarded-for", "")
+        if fwd.strip():
+            return fwd.split(",")[-1].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _rate_limit(request: Request, kind: str, per_hour: int, message: str) -> None:
+    """Sliding one-hour window per visitor and endpoint, so a public demo can't drain credits."""
+    if not router.live or per_hour <= 0:
         return
-    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0].strip()
-    now, q = time.time(), _runs[ip]
+    key = (kind, _client_ip(request))
+    now, q = time.time(), _buckets[key]
     while q and now - q[0] > 3600:
         q.popleft()
-    if len(q) >= settings.runs_per_hour:
-        raise HTTPException(429, "You've reached the hourly limit for this demo. The sample cases still work.")
+    if len(q) >= per_hour:
+        raise HTTPException(429, message)
     q.append(now)
+    if len(_buckets) > 50_000:  # drop idle visitors so memory stays bounded
+        for k in [k for k, v in _buckets.items() if not v or now - v[-1] > 3600]:
+            _buckets.pop(k, None)
 
 
 def _is_sample(denial: str) -> bool:
@@ -137,10 +152,14 @@ class IntakeRequest(BaseModel):
 
 
 @app.post("/api/intake")
-async def intake(req: IntakeRequest):
+async def intake(req: IntakeRequest, request: Request):
     """Nano-only preview for the wizard. Costs ~$0.0001 and is reused (cached) by the full run."""
+    if not _is_sample(req.denial):
+        _rate_limit(request, "intake", settings.intakes_per_hour, "Too many letters read this hour. Please try again later.")
     try:
         data, trace = await run_intake(req.denial, req.policy)
+    except LLMError as exc:
+        raise HTTPException(503, str(exc)) from exc
     except Exception as exc:
         raise HTTPException(502, f"Intake failed: {exc}") from exc
     return {"intake": data, "trace": trace_dict(trace), "live": router.live}
@@ -148,11 +167,27 @@ async def intake(req: IntakeRequest):
 
 @app.post("/api/appeal")
 async def appeal(req: AppealRequest, request: Request):
-    if not _is_sample(req.denial):
-        _rate_limit(request)  # sample cases replay from the response cache
+    sample = _is_sample(req.denial)
+    if not sample:  # sample cases replay from the bundled cache
+        _rate_limit(request, "appeal", settings.runs_per_hour,
+                    "You've reached the hourly limit for live appeals in this demo. The sample cases still work.")
+
     async def stream():
-        async for event in run_appeal(req.denial, req.policy, req.records, req.notes):
-            yield f"data: {json.dumps(event)}\n\n"
+        if sample or not router.live:
+            async for event in run_appeal(req.denial, req.policy, req.records, req.notes):
+                yield f"data: {json.dumps(event)}\n\n"
+            return
+        # Live runs queue behind a small concurrency cap; give up politely if the queue is long.
+        try:
+            await asyncio.wait_for(_live_runs.acquire(), timeout=45)
+        except asyncio.TimeoutError:
+            yield f"data: {json.dumps({'type': 'error', 'message': 'The live demo is busy right now. Try again in a minute, or open a sample case.'})}\n\n"
+            return
+        try:
+            async for event in run_appeal(req.denial, req.policy, req.records, req.notes):
+                yield f"data: {json.dumps(event)}\n\n"
+        finally:
+            _live_runs.release()
 
     return StreamingResponse(
         stream(),

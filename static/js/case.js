@@ -46,8 +46,15 @@ function setStatus(s, msg) { C.status = s; Store.save(C); renderHeader(); toast(
 function renderPipe() {
   $("#pipe").innerHTML = STAGES.map((s) => `<div class="pst ${stepState[s.id]?.st || ""}" id="p-${s.id}" style="--tc:${TC[s.tier]}">
       <span class="dot">${ic("check")}</span><span style="min-width:0"><span class="nm" style="display:block">${s.name}</span><span class="mt">${stepState[s.id]?.meta || s.tier}</span></span></div>`).join("")
-    + `<div class="pipe-sum"><span class="mono-m" id="sumCost">${R?.totals ? usd(R.totals.cost) + " · " + secs(R.totals.ms) : "—"}</span><span class="b-s c-brand6" id="sumSave">${R?.totals ? `${Math.round(R.totals.savings)}% less than all-Ultra` : "Nemotron on Nebius"}</span></div>`;
+    + `<div class="pipe-sum"><span class="mono-m" id="sumCost">${!R?.totals ? "—" : R.replayed ? "$0 · cached" : usd(R.totals.cost) + " · " + secs(R.totals.ms)}</span><span class="b-s c-brand6" id="sumSave">${R?.totals ? `${Math.round(R.totals.savings)}% less than all-Ultra` : "Nemotron on Nebius"}</span></div>`;
 }
+/** One-line run summary. Cached replays say so plainly instead of showing a cost that wasn't charged. */
+function runSummary(lead) {
+  const calls = R.totals?.calls ?? (R.traces || []).length;
+  if (R.replayed) return `${lead} ${calls} Nemotron calls · replayed from cache, no credits spent (original run ${usd(R.totals?.cost)})`;
+  return `${lead} ${calls} Nemotron calls · ${usd(R.totals?.cost)} · ${secs(R.totals?.ms || 0)}${R.totals?.savings != null ? ` · ${Math.round(R.totals.savings)}% less than all-Ultra` : ""}`;
+}
+
 function setStep(id, st, meta) {
   stepState[id] = { ...(stepState[id] || {}), st, ...(meta != null ? { meta } : {}) };
   const el = $(`#p-${id}`);
@@ -354,6 +361,14 @@ async function handle(ev) {
     R.final = d.letter; version = "final"; renderTabs();
     if (tab === "letter") { $("#margin")?.scrollIntoView({ behavior: "smooth", block: "nearest" }); rewriteLetter(d.letter, R.draft); }
   }
+  if (ev.stage === "rescore" && d.kept_original) {
+    // The revision scored lower than the draft, so the draft ships unchanged.
+    R.final = R.draft; R.rescore = null; R.keptOriginal = d.revised_score;
+    setStep("revise", "skip", `scored ${d.revised_score}`); setStep("rescore", "done", "kept draft");
+    renderTabs(); renderRail(); if (tab === "letter") renderPanel();
+    toast(`The revision scored ${d.revised_score}, lower than the draft’s ${d.previous_score}, so the draft was kept.`);
+    return;
+  }
   if (ev.stage === "rescore") {
     R.rescore = d; renderRail(); renderTabs();
     if (tab === "letter") await markNotesFixed();
@@ -383,7 +398,9 @@ async function run() {
     saveResult();
     running = false;
     renderHeader();
-    status(`Appeal ready · ${R.totals?.calls ?? R.traces.length} Nemotron calls · ${usd(R.totals?.cost)} · ${secs(R.totals?.ms || 0)}`, "nano", true);
+    R.replayed = R.traces.length > 0 && R.traces.every((t) => t.cached);
+    status(runSummary("Appeal ready ·"), "nano", true);
+    renderPipe();
     if (R.ready && tab === "letter") { await sleep(REDUCED ? 0 : 500); $("#stamp")?.classList.add("go"); }
     $("#pipe .pipe-sum").animate?.([{ background: "#D3E8DC" }, { background: "var(--brand-tint)" }], { duration: 900 });
   } catch (e) {
@@ -420,8 +437,9 @@ function confetti() {
     STAGES.forEach((s) => (stepState[s.id] = { st: "done", meta: s.tier }));
     for (const t of R.traces || []) stepState[t.stage] = { st: "done", meta: `${t.tier} · ${secs(t.latency_ms)}` };
     if (R.clauses) stepState.retrieve = { st: "done", meta: `${R.clauses.length} clauses` };
-    if (!R.rescore) { stepState.revise = { st: "skip", meta: "not needed" }; stepState.rescore = { st: "skip", meta: "not needed" }; }
-    status(`Built with ${R.totals?.calls ?? (R.traces || []).length} Nemotron calls · ${usd(R.totals?.cost)} · ${R.totals?.savings != null ? Math.round(R.totals.savings) + "% less than all-Ultra" : ""}`, "nano", true);
+    if (R.keptOriginal != null) { stepState.revise = { st: "skip", meta: `scored ${R.keptOriginal}` }; stepState.rescore = { st: "done", meta: "kept draft" }; }
+    else if (!R.rescore) { stepState.revise = { st: "skip", meta: "not needed" }; stepState.rescore = { st: "skip", meta: "not needed" }; }
+    status(runSummary("Built with"), "nano", true);
   } else status("Not built yet.", "nano", true);
   renderHeader(); renderPipe(); renderTabs(); renderRail(); renderPanel();
   $("#tabs").addEventListener("click", (e) => { const b = e.target.closest("[data-t]"); if (!b) return; if (editing) toggleEdit(); tab = b.dataset.t; renderTabs(); renderPanel(); });

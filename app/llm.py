@@ -49,12 +49,18 @@ class LLMError(RuntimeError):
     pass
 
 
+SEED_DIR = Path(__file__).resolve().parent / "seed_cache"
+
+
 class CreditGuard:
     """Protects the Token Factory balance.
 
     * Response cache: identical requests (same model, prompts and params) are replayed from
       disk, so re-running a sample case or a judge clicking around costs nothing.
-    * Spend cap: estimated spend is persisted across restarts; live calls stop at MAX_SPEND_USD.
+    * Seed cache: responses for the bundled sample cases ship with the app (app/seed_cache),
+      so sample runs are free even on a fresh server whose disk was wiped by a redeploy.
+    * Spend caps: a lifetime cap (MAX_SPEND_USD) and a per-day cap (DAILY_SPEND_USD, UTC days).
+      Both are persisted to the ledger; live calls stop when either is reached.
     """
 
     def __init__(self) -> None:
@@ -63,10 +69,14 @@ class CreditGuard:
             self.dir = Path(__file__).resolve().parent.parent / self.dir
         self.dir.mkdir(parents=True, exist_ok=True)
         self.ledger = self.dir / "spend.json"
+        self.touched: set[str] = set()  # cache keys used this process (for seeding)
         try:
-            self.spent = float(json.loads(self.ledger.read_text())["usd"])
+            data = json.loads(self.ledger.read_text())
         except Exception:
-            self.spent = 0.0
+            data = {}
+        self.spent = float(data.get("usd", 0.0))
+        self.day = data.get("day", "")
+        self.day_spent = float(data.get("day_usd", 0.0))
 
     @staticmethod
     def key(*parts) -> str:
@@ -75,25 +85,37 @@ class CreditGuard:
     def get(self, key: str) -> dict | None:
         if not settings.cache:
             return None
-        try:
-            return json.loads((self.dir / f"{key}.json").read_text(encoding="utf-8"))
-        except Exception:
-            return None
+        for d in (self.dir, SEED_DIR):
+            try:
+                hit = json.loads((d / f"{key}.json").read_text(encoding="utf-8"))
+                self.touched.add(key)
+                return hit
+            except Exception:
+                continue
+        return None
 
     def put(self, key: str, value: dict) -> None:
+        self.touched.add(key)
         if settings.cache:
             (self.dir / f"{key}.json").write_text(json.dumps(value), encoding="utf-8")
 
+    def _roll_day(self) -> None:
+        today = time.strftime("%Y-%m-%d", time.gmtime())
+        if self.day != today:
+            self.day, self.day_spent = today, 0.0
+
     def check(self) -> None:
+        self._roll_day()
         if self.spent >= settings.max_spend_usd:
-            raise LLMError(
-                f"Spend cap reached (${self.spent:.2f} of ${settings.max_spend_usd:.2f}). "
-                "Raise MAX_SPEND_USD in .env to continue."
-            )
+            raise LLMError("The live demo has reached its spending limit. The sample cases still work — open one from the dashboard.")
+        if self.day_spent >= settings.daily_spend_usd:
+            raise LLMError("Today's live demo budget is used up. The sample cases still work — open one from the dashboard, or try again tomorrow.")
 
     def charge(self, usd: float) -> None:
+        self._roll_day()
         self.spent += usd
-        self.ledger.write_text(json.dumps({"usd": round(self.spent, 6)}))
+        self.day_spent += usd
+        self.ledger.write_text(json.dumps({"usd": round(self.spent, 6), "day": self.day, "day_usd": round(self.day_spent, 6)}))
 
 
 def _strip_think(text: str) -> str:

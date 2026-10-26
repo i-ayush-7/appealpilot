@@ -1,18 +1,23 @@
 """Sample cases for the demo. All people, plans, providers and numbers are fictional.
 
-Dates are written as {{T-48}} (48 days before today) and rendered per request, so the
-appeal deadlines in the demo are always live rather than long expired.
+Dates are written as {{T-48}} (48 days before ANCHOR) and rendered per request.
 """
 
+import os
 import re
 from datetime import date, timedelta
+
+# Sample dates are fixed relative to this anchor (not to "today"), so sample prompts are
+# byte-identical every day and their bundled cache stays valid. All sample dates fall before
+# 2026-10-27 and every appeal deadline is in 2026-12 or later.
+ANCHOR = date.fromisoformat(os.getenv("SAMPLE_ANCHOR", "2026-11-20"))
 
 _REL = re.compile(r"\{\{T-(\d+)\}\}")
 
 
 def render_dates(text: str) -> str:
     def fmt(m):
-        d = date.today() - timedelta(days=int(m.group(1)))
+        d = ANCHOR - timedelta(days=int(m.group(1)))
         return f"{d:%B} {d.day}, {d.year}"
     return _REL.sub(fmt, text)
 
@@ -228,4 +233,6 @@ def get_sample(sample_id: str) -> dict | None:
 def sample_summary(s: dict) -> dict:
     """Card-level facts for the dashboard, with a live deadline."""
     m = s["meta"]
-    return {"id": s["id"], "title": s["title"], "blurb": s["blurb"], **m, "days_left": m["window"] - m["denied_days_ago"]}
+    deadline = ANCHOR - timedelta(days=m["denied_days_ago"]) + timedelta(days=m["window"])
+    return {"id": s["id"], "title": s["title"], "blurb": s["blurb"], **m,
+            "deadline": deadline.isoformat(), "days_left": (deadline - date.today()).days}

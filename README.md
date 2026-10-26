@@ -133,6 +133,24 @@ docker run -p 8000:8000 -e NEBIUS_API_KEY=... appealpilot
 To serve it from **Nebius Serverless Endpoints**, push the image to Nebius Container Registry, then create an endpoint from it
 with port `8000` and `NEBIUS_API_KEY` set as a secret environment variable. *(Add the exact commands you used here.)*
 
+## Running a public demo safely
+
+A public URL means strangers can spend your Token Factory credits. AppealPilot bounds that:
+
+| Safeguard | Default | Setting |
+|---|---|---|
+| Bundled sample cache — the three sample cases ship with their model responses (`app/seed_cache`), so sample runs cost $0 even on a fresh server | on | rebuild with `python -m eval.seed_samples` |
+| Response cache — identical requests are replayed, never re-billed | on | `LLM_CACHE` |
+| Daily spend cap (UTC day); visitors then see "today's live demo budget is used up — try a sample" | $1.50 | `DAILY_SPEND_USD` |
+| Lifetime spend cap | $5 | `MAX_SPEND_USD` |
+| Live appeals per visitor per hour (samples exempt) | 6 | `RUNS_PER_HOUR` |
+| Letter-reading (intake) calls per visitor per hour | 30 | `INTAKES_PER_HOUR` |
+| Live runs at once; extra runs queue, then fail politely | 2 | `MAX_CONCURRENT_RUNS` |
+| Visitor identity — `X-Forwarded-For` is ignored unless you're behind a proxy | off | `TRUST_PROXY=1` behind a proxy |
+
+The API key never reaches the browser. Spend tracking lives in `.cache/`; on hosts with ephemeral disks
+it resets on redeploy, so also set a spending limit in Token Factory if your account offers one.
+
 ## Privacy
 
 Documents are processed in memory for a single request and never written to disk or logged.
