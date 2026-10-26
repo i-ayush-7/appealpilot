@@ -1,0 +1,6 @@
+.env
+.git
+__pycache__
+eval
+*.md
+.cache

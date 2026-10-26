@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard · AppealPilot</title>
+  <meta name="theme-color" content="#F7F5F0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230E3B2E'/><path d='M9 16.5l4.6 4.6L23 11' stroke='%23B8E04A' stroke-width='3.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Caveat:wght@500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  <link rel="stylesheet" href="/static/css/pages.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="App navigation"></aside>
+    <main class="main">
+      <div class="topbar">
+        <div class="greet grow"><p class="caps c-muted" id="today" style="margin:0"></p><h1 class="d-m" id="hello">Welcome back.</h1></div>
+        <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="search" placeholder="Search cases, insurers, claims" aria-label="Search cases" /><span class="kbd">/</span></label>
+        <a class="btn btn-primary" href="/app/new"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New appeal<span class="sheen"></span></a>
+      </div>
+
+      <section class="kpis stagger" id="kpis" aria-label="Summary"></section>
+
+      <section class="dash">
+        <div class="card cases" id="cases">
+          <div class="cases-head">
+            <h2 class="h-s">Your cases</h2>
+            <div id="filters" role="tablist" aria-label="Filter cases"></div>
+          </div>
+          <div class="chead caps"><span>Case</span><span>Status</span><span>Deadline</span><span>Score</span><span>At stake</span><span></span></div>
+          <div id="rows"></div>
+          <div class="cases-foot b-s" id="tip"></div>
+        </div>
+        <aside class="rail">
+          <div class="card card-pad"><h3 class="h-s" style="margin-bottom:14px">Upcoming deadlines</h3><div id="deadlines" class="stagger" style="display:flex;flex-direction:column;gap:12px"></div></div>
+          <div class="recovered" id="recovered"></div>
+          <div class="tipcard"><span class="caps c-brand6">Know your rights</span><p class="h-s c-brand">You can request the full claim file and the criteria used — free of charge.</p><a href="/app/rights">Read the guide →</a></div>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

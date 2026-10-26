@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Know your rights · AppealPilot</title>
+  <meta name="theme-color" content="#F7F5F0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230E3B2E'/><path d='M9 16.5l4.6 4.6L23 11' stroke='%23B8E04A' stroke-width='3.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Caveat:wght@500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  <link rel="stylesheet" href="/static/css/pages.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="App navigation"></aside>
+    <main class="main">
+      <header class="topbar" style="align-items:flex-end">
+        <div class="grow" style="display:flex;flex-direction:column;gap:8px"><p class="caps c-brand6" style="margin:0">Library</p><h1 class="d-l">Know your rights</h1><p class="b-m c-ink2" style="margin:0;max-width:520px">Plain-language guides to the six most common denial types, and the rules insurers have to follow.</p></div>
+        <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search rights, laws, denial types" aria-label="Search the library" /></label>
+      </header>
+
+      <section class="rights-band reveal">
+        <div><p class="caps c-accent">Your baseline rights</p><h2 class="d-m" style="margin-top:8px">You can appeal almost any denial — usually twice.</h2></div>
+        <div><span class="rb-n">1</span><p class="h-s">Internal appeal</p><p class="b-s" style="color:var(--night-text);margin-top:6px">Most plans give you 180 days from the denial notice to ask the insurer to reconsider.</p></div>
+        <div><span class="rb-n">2</span><p class="h-s">External review</p><p class="b-s" style="color:var(--night-text);margin-top:6px">If they say no again, an independent reviewer can overrule them. Their decision binds the plan.</p></div>
+        <div><span class="rb-n">3</span><p class="h-s">Your claim file</p><p class="b-s" style="color:var(--night-text);margin-top:6px">You can request every document and criterion used to deny you, free of charge.</p></div>
+      </section>
+
+      <section class="rgrid stagger" id="grid"></section>
+      <p class="b-s c-muted" style="margin:0">General information, not legal advice. Deadlines and rights vary by plan type and state — your denial letter lists the ones that apply to you.</p>
+    </main>
+  </div>
+  <div class="dscrim" id="dscrim"></div>
+  <aside class="rdrawer" id="drawer" aria-hidden="true" role="dialog" aria-label="Guide"></aside>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/rights.js"></script>
+</body>
+</html>

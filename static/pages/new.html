@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>New appeal · AppealPilot</title>
+  <meta name="theme-color" content="#F7F5F0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230E3B2E'/><path d='M9 16.5l4.6 4.6L23 11' stroke='%23B8E04A' stroke-width='3.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Caveat:wght@500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  <link rel="stylesheet" href="/static/css/pages.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="App navigation"></aside>
+    <main class="main">
+      <header class="wz-head" style="display:flex;flex-direction:column;gap:8px">
+        <p class="caps c-brand6" id="stepCap">New appeal · Step 1 of 5</p>
+        <h1 class="d-l" id="stepTitle">Let’s start with the denial letter.</h1>
+        <p class="b-m c-ink2" id="stepSub"></p>
+      </header>
+      <nav class="stepper" id="stepper" aria-label="Steps"></nav>
+      <section class="wz">
+        <div id="pane"></div>
+        <aside class="card found" id="found" aria-live="polite"></aside>
+      </section>
+    </main>
+  </div>
+  <input type="file" id="fileInput" accept=".pdf,.txt,.md,text/plain,application/pdf" multiple hidden />
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/new.js"></script>
+</body>
+</html>

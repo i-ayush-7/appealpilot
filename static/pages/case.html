@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Case · AppealPilot</title>
+  <meta name="theme-color" content="#F7F5F0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230E3B2E'/><path d='M9 16.5l4.6 4.6L23 11' stroke='%23B8E04A' stroke-width='3.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Caveat:wght@500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  <link rel="stylesheet" href="/static/css/pages.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="App navigation"></aside>
+    <main class="main" id="main">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="/app#cases">Cases</a><span>/</span><span id="crumbIns" class="c-ink2">Case</span></nav>
+      <header class="cw-head">
+        <div class="cw-title"><h1 class="d-m" id="title">Loading…</h1><span id="statusPill"></span></div>
+        <div id="actions" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </header>
+      <div class="status-line idle" id="statusLine"><span class="pulse"></span><span id="statusText"></span></div>
+      <section class="card pipe" id="pipe" aria-label="Pipeline"></section>
+      <div id="errorBox" class="err" hidden></div>
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Case sections"></nav>
+      <section class="cw">
+        <div id="panel" class="panel"></div>
+        <aside class="rail" id="rail"></aside>
+      </section>
+      <p class="b-s c-muted" style="text-align:center;max-width:720px;margin:12px auto 0">AppealPilot drafts documents to help you exercise your appeal rights. It is not legal or medical advice. Check every fact before sending.</p>
+    </main>
+  </div>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/case.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technology · AppealPilot</title>
+  <meta name="theme-color" content="#F7F5F0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230E3B2E'/><path d='M9 16.5l4.6 4.6L23 11' stroke='%23B8E04A' stroke-width='3.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Caveat:wght@500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  <link rel="stylesheet" href="/static/css/pages.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="App navigation"></aside>
+    <main class="main">
+      <header class="topbar" style="align-items:flex-end">
+        <div class="grow" style="display:flex;flex-direction:column;gap:8px"><p class="caps c-brand6" style="margin:0">Under the hood</p><h1 class="d-l" style="max-width:640px">Three Nemotron models, routed by difficulty.</h1></div>
+        <span class="status" id="liveBadge">Checking…</span>
+        <a class="btn btn-secondary" href="https://github.com/" target="_blank" rel="noopener">View on GitHub</a>
+      </header>
+
+      <section class="tiers3" id="tiers"></section>
+
+      <section class="card card-pad reveal">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><h2 class="h-s grow">Pipeline</h2><span class="mono c-muted">Streams to the browser over SSE</span></div>
+        <div class="flow" id="flow"></div>
+        <p class="b-s c-ink2" style="display:flex;align-items:center;gap:8px;margin:14px 0 0"><svg class="i c-ultra" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Revise + re-score run only when the reviewer scores below 85, finds a factual error, or flags a high-severity weakness.</p>
+      </section>
+
+      <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+        <div class="card card-pad meas reveal">
+          <div style="display:flex;align-items:center"><h2 class="h-s grow">Measured on a live run</h2><span class="mono c-muted">Spine MRI case · 7 steps</span></div>
+          <div><div class="row"><span class="l-s c-ink2 grow">Cost per appeal</span><span class="mono-m">$0.034</span><span class="mono c-muted">vs $0.048 all-Ultra</span></div><div class="bar" style="margin-top:8px;height:6px"><i data-w="71%"></i></div></div>
+          <div><div class="row"><span class="l-s c-ink2 grow">Wall time</span><span class="mono-m">39.3s</span><span class="mono c-muted">streamed live</span></div><div class="bar" style="margin-top:8px;height:6px"><i data-w="100%"></i></div></div>
+          <div><div class="row"><span class="l-s c-ink2 grow">Reviewer score</span><span class="mono-m">82 → 92</span><span class="mono c-muted">after one revision</span></div><div class="bar" style="margin-top:8px;height:6px"><i data-w="92%"></i></div></div>
+          <p class="b-s c-muted" style="margin:0">Your own runs appear in each case’s Model routing tab, with per-call tokens and cost.</p>
+        </div>
+        <div class="card card-pad reveal" style="--rd:.08s">
+          <h2 class="h-s" style="margin-bottom:16px">Guardrails</h2>
+          <div class="guards" id="guards"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/static/js/common.js"></script>
+  <script>
+    const TIERS = [
+      ["nano", "Nano", "30B params · 3B active", "Fast structured extraction", "$0.06 / $0.24", "Intake · classification · JSON repair"],
+      ["super", "Super", "120B params · 12B active", "Cited multi-document writing", "$0.30 / $0.90", "Case building · drafting · revision"],
+      ["ultra", "Ultra", "550B params · 55B active", "Reasoning on, adversarial", "$1.00 / $3.00", "Insurer-side review · re-score"],
+    ];
+    const FLOW = [["local", "Input", "Denial + policy + records"], ["nano", "Nano", "Intake"], ["local", "Local", "BM25 clauses"], ["super", "Super", "Case & evidence"], ["super", "Super", "Draft letter"], ["ultra", "Ultra", "Insurer review"], ["super", "Super", "Revise"], ["ultra", "Ultra", "Re-score"]];
+    const GUARDS = [["shield", "Factual-error gate", "Any error flagged by Ultra forces a revision, whatever the score."], ["check", "Plan-type check", "ERISA is only cited when the letter actually names an employer plan."], ["clock", "Credit guard", "Response cache, persistent spend cap and a per-visitor rate limit."], ["code", "JSON repair", "Malformed structured output gets one repair pass on Nano."]];
+    (async () => {
+      renderShell("Technology");
+      let h = {};
+      try { h = await (await fetch("/api/health")).json(); } catch {}
+      const lb = $("#liveBadge");
+      lb.className = `status ${h.live ? "s-ready" : "s-draft"}`;
+      lb.textContent = h.live ? "Live on Nebius Token Factory" : "Demo mode";
+      $("#tiers").innerHTML = TIERS.map(([k, n, size, role, price, uses], i) => `<article class="card tcard reveal" style="--tc:var(--${k});--rd:${i * .08}s">
+        <div style="display:flex;align-items:center;justify-content:space-between"><span class="tier t-${k}">${n}</span><span class="mono c-muted">${size}</span></div>
+        <h3 class="d-m">Nemotron 3 ${n}</h3><p class="l-m c-${k}" style="margin:0">${role}</p>
+        <div class="tmeta"><div><span class="caps c-muted">Model</span><span class="mono">${esc((h.models || {})[k] || "—")}</span></div><div><span class="caps c-muted">Price / 1M tokens in · out</span><span class="mono">${price}</span></div><div><span class="caps c-muted">Used for</span><span class="b-s">${uses}</span></div></div></article>`).join("");
+      $("#flow").innerHTML = FLOW.map(([k, t, l], i) => `${i ? `<span class="farrow">${ic("arrow")}</span>` : ""}<div class="fnode bg-${k}" style="--tc:var(--${k});transition-delay:${i * .08}s"><span class="caps">${t}</span><span class="l-s" style="color:var(--ink)">${l}</span></div>`).join("");
+      $("#guards").innerHTML = GUARDS.map(([i, t, d]) => `<div class="g"><span class="tile bg-brand-tint">${ic(i)}</span><div><div class="l-m">${t}</div><div class="b-s c-muted">${d}</div></div></div>`).join("");
+      $("#flow").classList.add("reveal");
+      initReveal();
+      // Light each pipeline node in sequence, on a loop, once it's on screen.
+      const io = new IntersectionObserver(([e]) => { if (!e.isIntersecting || REDUCED) return; io.disconnect(); const nodes = $$(".fnode"); let i = 0; setInterval(() => { nodes.forEach((n) => n.classList.remove("lit")); nodes[i % nodes.length].classList.add("lit"); i++; }, 700); });
+      io.observe($("#flow"));
+    })();
+  </script>
+</body>
+</html>

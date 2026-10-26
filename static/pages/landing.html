@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AppealPilot — appeal insurance denials with NVIDIA Nemotron</title>
+  <meta name="description" content="AppealPilot reads your denial, your policy and your medical records, cites the clauses your insurer must follow, and drafts an appeal that a second model attacks before you send it." />
+  <meta name="theme-color" content="#F7F5F0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230E3B2E'/><path d='M9 16.5l4.6 4.6L23 11' stroke='%23B8E04A' stroke-width='3.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Caveat:wght@500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  <link rel="stylesheet" href="/static/css/landing.css" />
+</head>
+<body class="landing">
+  <header class="lnav" id="lnav">
+    <div class="wrap lnav-in">
+      <a class="logo" href="/" aria-label="AppealPilot home"><span class="logo-mark"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span>AppealPilot</a>
+      <nav class="lnav-links" aria-label="Main">
+        <a href="#how">How it works</a><a href="#routing">Technology</a><a href="#features">Product</a><a href="/app/rights">Know your rights</a><a href="#faq">FAQ</a>
+      </nav>
+      <div class="lnav-cta"><a class="btn btn-ghost" href="/app">Dashboard</a><a class="btn btn-primary" href="/app/new">Start an appeal<span class="sheen"></span></a></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <p class="eyebrow h-in" style="--d:.05s"><i class="dot n"></i><i class="dot s"></i><i class="dot u"></i>Three NVIDIA Nemotron models on Nebius Token Factory</p>
+        <h1 class="d-2xl hero-h1"><span class="h-in" style="--d:.12s">They said no.</span></h1>
+        <p class="hero-h1b d-it h-in" style="--d:.24s">Your appeal will show them why they’re wrong.</p>
+        <p class="b-l c-ink2 hero-lede h-in" style="--d:.36s">AppealPilot reads your denial, your policy and your medical records, cites the exact clauses your insurer has to follow, and drafts a formal appeal. Then a second model attacks it the way the insurer’s reviewer would — so you only send the version that holds up.</p>
+        <div class="hero-cta h-in" style="--d:.46s">
+          <a class="btn btn-primary btn-lg" href="/app/new">Start your appeal — it’s free <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="sheen"></span></a>
+          <button class="btn btn-secondary btn-lg" id="watchSample">Watch a sample case</button>
+        </div>
+        <ul class="trust h-in" style="--d:.56s">
+          <li><svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Documents never stored</li>
+          <li><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>About 2 minutes</li>
+          <li><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>No account needed</li>
+        </ul>
+      </div>
+
+      <div class="mock" id="mock" aria-label="Product preview">
+        <div class="mock-glow"></div>
+        <article class="m-paper" id="mPaper">
+          <div class="tierbar"></div>
+          <p class="mono c-ink2 m-re">RE: Request for Internal Appeal<br />Claim CLM-2026-0311-77412 · Denial MN-04</p>
+          <p class="m-letter" id="mLetter"></p>
+          <div class="m-lines"><i></i><i></i><i></i><i style="width:55%"></i></div>
+        </article>
+        <div class="m-stamp" id="mStamp">Appeal ready</div>
+        <p class="m-pen" id="mPen">Cite the PT note that shows the decline ✓</p>
+        <div class="m-route" id="mRoute">
+          <p class="caps">Model routing</p>
+          <div class="mr-row"><span class="tier t-nano">Nano</span><span>Read denial</span><b>0.4s</b></div>
+          <div class="mr-row"><span class="tier t-super">Super</span><span>Build case + draft</span><b>13.7s</b></div>
+          <div class="mr-row"><span class="tier t-ultra">Ultra</span><span>Insurer review</span><b>11.2s</b></div>
+          <div class="mr-row"><span class="tier t-super">Super</span><span>Revise</span><b>4.4s</b></div>
+          <div class="mr-foot"><span>$0.034</span><em>−29% vs all-Ultra</em></div>
+        </div>
+        <div class="m-score" id="mScore">
+          <div class="ms-head"><span class="caps c-muted">Win likelihood</span><span class="tier t-ultra">Ultra</span></div>
+          <div class="ms-gauge" id="mGauge"></div>
+          <div class="ms-row"><span class="ms-num" id="mNum">0</span><span class="pill pill-good" id="mDelta">▲ +10 pts</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROOF -->
+    <section class="proof"><div class="wrap proof-in reveal"><span class="caps c-muted">Built on open infrastructure</span><b>NVIDIA Nemotron 3 Nano</b><b>Nemotron 3 Super</b><b>Nemotron 3 Ultra</b><b>Nebius Token Factory</b></div></section>
+
+    <!-- PROBLEM -->
+    <section class="problem">
+      <div class="wrap">
+        <div class="pb-head reveal">
+          <h2 class="d-xl">Most denials are never challenged. Most challenges work.</h2>
+          <p class="b-l">Insurers count on silence. Reading a 200-page policy, finding the clause they had to follow and writing a formal letter before the deadline is exhausting — especially when you’re sick. Professional advocates charge $150 an hour to do it.</p>
+        </div>
+        <div class="pb-stats">
+          <div class="reveal" style="--rd:.05s"><span class="d-2xl c-accent"><span data-count="1" data-prefix="&lt;" data-suffix="%">0</span></span><p class="b-l">of denied claims are ever appealed</p><span class="mono">KFF · ACA marketplace data</span></div>
+          <div class="reveal" style="--rd:.15s"><span class="d-2xl c-accent"><span data-count="4">0</span> in 10</span><p class="b-l">appeals that get filed overturn the denial</p><span class="mono">KFF · ACA marketplace data</span></div>
+          <div class="reveal" style="--rd:.25s"><span class="d-2xl c-accent">$<span data-count="0.03" data-dec="2">0</span></span><p class="b-l">in model costs to build and review one appeal</p><span class="mono">Measured on Nebius Token Factory</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW -->
+    <section class="sec" id="how">
+      <div class="wrap">
+        <div class="sec-head reveal"><p class="caps c-brand6">How it works</p><h2 class="d-l">From denial letter to a reviewed appeal in four steps.</h2><p class="b-l c-ink2">Each step is handled by the smallest model that can do it well — so it’s fast, cheap, and the expensive reasoning goes where it matters.</p></div>
+        <div class="steps">
+          <article class="card step reveal" style="--rd:.0s"><div class="st-top"><span class="mono-m c-muted">01</span><span class="tier t-nano">Nano</span></div>
+            <dl class="st-vis"><div><dt>Category</dt><dd>Medical necessity</dd></div><div><dt>Deadline</dt><dd>148 days left</dd></div><div><dt>At stake</dt><dd>$2,340</dd></div></dl>
+            <h3 class="h-m">Read the denial</h3><p class="b-m c-ink2">Extracts the claim, the quoted reason, the denial category and your deadline in under a second.</p></article>
+          <article class="card step reveal" style="--rd:.08s"><div class="st-top"><span class="mono-m c-muted">02</span><span class="tier t-local">Local</span></div>
+            <dl class="st-vis"><div><dt>§ 4.2</dt><dd>Lumbar MRI · cited</dd></div><div><dt>§ 9.1</dt><dd>Internal appeals</dd></div><div><dt>§ 9.4</dt><dd>External review</dd></div></dl>
+            <h3 class="h-m">Find the clauses</h3><p class="b-m c-ink2">Searches your full policy and pulls only the sections your insurer is bound by.</p></article>
+          <article class="card step reveal" style="--rd:.16s"><div class="st-top"><span class="mono-m c-muted">03</span><span class="tier t-super">Super</span></div>
+            <dl class="st-vis"><div><dt>Strong</dt><dd>Red-flag exception met</dd></div><div><dt>Strong</dt><dd>Surgery was planned</dd></div><div><dt>Moderate</dt><dd>Therapy was failing</dd></div></dl>
+            <h3 class="h-m">Build &amp; draft</h3><p class="b-m c-ink2">Turns policy language and dated medical records into ranked, quoted arguments — then a formal letter.</p></article>
+          <article class="card step reveal" style="--rd:.24s"><div class="st-top"><span class="mono-m c-muted">04</span><span class="tier t-ultra">Ultra</span></div>
+            <dl class="st-vis"><div><dt>Draft</dt><dd>82 / 100</dd></div><div><dt>Revised</dt><dd>92 / 100</dd></div><div><dt>Verdict</dt><dd>Ready to send</dd></div></dl>
+            <h3 class="h-m">Attack &amp; revise</h3><p class="b-m c-ink2">Plays the insurer’s skeptical reviewer, scores the letter and forces a revision until it holds up.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROUTING -->
+    <section class="sec sec-surface" id="routing">
+      <div class="wrap routing">
+        <div class="rt-copy reveal">
+          <p class="caps c-brand6">Model routing</p>
+          <h2 class="d-l">Three Nemotron models. Each does what it’s best at.</h2>
+          <ul class="rt-list">
+            <li><span class="tier t-nano">Nano</span><p class="b-m c-ink2">Fast, structured extraction. Classifies the denial and finds your deadline.</p></li>
+            <li><span class="tier t-super">Super</span><p class="b-m c-ink2">Multi-document reasoning with strict citation rules. Writes the case and the letter.</p></li>
+            <li><span class="tier t-ultra">Ultra</span><p class="b-m c-ink2">Reasoning turned on. Finds the holes before the insurer does.</p></li>
+          </ul>
+          <a class="btn btn-secondary" href="/app/technology">Read the technical breakdown <svg class="i arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="card rt-table reveal" style="--rd:.1s">
+          <div class="rt-row rt-h caps c-muted"><span>Step</span><span>Model</span><span>Time</span><span>Cost</span></div>
+          <div class="rt-row"><span class="l-m">Read denial</span><span><i class="tier t-nano">Nano</i></span><span class="mono">0.4s</span><span class="mono">$0.0001</span><div class="bar" style="--c:var(--nano)"><i data-w="3%"></i></div></div>
+          <div class="rt-row"><span class="l-m">Build case</span><span><i class="tier t-super">Super</i></span><span class="mono">7.1s</span><span class="mono">$0.0018</span><div class="bar" style="--c:var(--super)"><i data-w="11%"></i></div></div>
+          <div class="rt-row"><span class="l-m">Draft letter</span><span><i class="tier t-super">Super</i></span><span class="mono">6.6s</span><span class="mono">$0.0021</span><div class="bar" style="--c:var(--super)"><i data-w="13%"></i></div></div>
+          <div class="rt-row"><span class="l-m">Insurer review</span><span><i class="tier t-ultra">Ultra</i></span><span class="mono">11.2s</span><span class="mono">$0.0164</span><div class="bar" style="--c:var(--ultra)"><i data-w="100%"></i></div></div>
+          <div class="rt-row"><span class="l-m">Revise</span><span><i class="tier t-super">Super</i></span><span class="mono">4.4s</span><span class="mono">$0.0031</span><div class="bar" style="--c:var(--super)"><i data-w="19%"></i></div></div>
+          <div class="rt-row"><span class="l-m">Re-score</span><span><i class="tier t-ultra">Ultra</i></span><span class="mono">9.6s</span><span class="mono">$0.0105</span><div class="bar" style="--c:var(--ultra)"><i data-w="64%"></i></div></div>
+          <div class="rt-foot"><span class="mono-m">This appeal $0.034 · All on Ultra $0.048</span><span class="rt-save">29% cheaper</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="sec" id="features">
+      <div class="wrap">
+        <div class="sec-head reveal"><p class="caps c-brand6">The workspace</p><h2 class="d-l">Built to win, not just to write.</h2></div>
+        <div class="feats">
+          <article class="card feat reveal"><div class="fv fv-cite">
+              <div class="fq"><span class="chip c-nano" style="background:var(--nano-tint);border:0">§ 4.2</span><q>Conservative therapy is not required when criterion (b) is met.</q></div>
+              <div class="fq"><span class="chip c-ink2" style="background:var(--local-tint);border:0">Record</span><q>Left ankle dorsiflexion 3/5 (right 5/5).</q></div></div>
+            <h3 class="h-m">Every argument is cited</h3><p class="b-m c-ink2">Verbatim policy language and dated record quotes — never paraphrased, never invented.</p></article>
+          <article class="card feat reveal" style="--rd:.08s"><div class="fv fv-pen">
+              <p class="pen done">No comparison against an earlier exam</p><p class="pen done">No request for peer-to-peer review</p><p class="pen">! Doctor’s letter not yet enclosed</p></div>
+            <h3 class="h-m">Attacked before it’s sent</h3><p class="b-m c-ink2">Ultra reviews your letter like the insurer’s medical reviewer, then the weaknesses get fixed.</p></article>
+          <article class="card feat reveal" style="--rd:.16s"><div class="fv fv-dl">
+              <svg viewBox="0 0 76 76" width="76" height="76"><circle cx="38" cy="38" r="31" fill="none" stroke="#E6E1D6" stroke-width="7"/><circle class="ring" cx="38" cy="38" r="31" fill="none" stroke="#146C4E" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 38 38)"/></svg>
+              <div><p class="d-m"><span data-count="148">0</span> days</p><p class="b-s c-muted">to file your internal appeal</p></div></div>
+            <h3 class="h-m">Never miss a deadline</h3><p class="b-m c-ink2">Appeal windows are tracked per case, with expedited-appeal prompts when care is urgent.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section class="privacy"><div class="wrap pv reveal">
+      <div class="pv-l"><span class="pv-lock"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><h2 class="d-l c-brand">Your medical records stay yours.</h2></div>
+      <div class="pv-cols">
+        <div><h3 class="h-s c-brand">Processed, never stored</h3><p class="b-m c-ink2">Documents live in memory for one request and are never written to disk or logged.</p></div>
+        <div><h3 class="h-s c-brand">Open models, one provider</h3><p class="b-m c-ink2">Calls go only to NVIDIA Nemotron on Nebius Token Factory. No data brokers.</p></div>
+        <div><h3 class="h-s c-brand">You stay in control</h3><p class="b-m c-ink2">Every fact in your letter is shown with its source, so you check before you send.</p></div>
+      </div>
+    </div></section>
+
+    <!-- FAQ -->
+    <section class="sec" id="faq"><div class="wrap faq">
+      <div class="reveal"><p class="caps c-brand6">FAQ</p><h2 class="d-l">Questions, answered plainly.</h2></div>
+      <div class="faq-list reveal" style="--rd:.1s">
+        <details open><summary class="h-m">Is this legal or medical advice?<span class="pm"></span></summary><div class="ans"><p class="b-m c-ink2">No. AppealPilot drafts documents that help you use the appeal rights you already have. You review every fact before anything is sent, and we recommend adding a letter from your doctor.</p></div></details>
+        <details><summary class="h-m">Which denials does it handle?<span class="pm"></span></summary><div class="ans"><p class="b-m c-ink2">US health insurance claim denials for internal appeals: medical necessity, prior authorization, out-of-network and emergency care, experimental treatment, coding and benefit exclusions.</p></div></details>
+        <details><summary class="h-m">What does it cost to run?<span class="pm"></span></summary><div class="ans"><p class="b-m c-ink2">About three cents of model time per appeal on Nebius Token Factory. Routing simple steps to Nemotron Nano and Super keeps it roughly 30% cheaper than sending everything to Ultra.</p></div></details>
+        <details><summary class="h-m">What happens to my documents?<span class="pm"></span></summary><div class="ans"><p class="b-m c-ink2">They are processed in memory for your request and never written to disk on our server. Your cases are saved only in your own browser.</p></div></details>
+        <details><summary class="h-m">What if my appeal is denied again?<span class="pm"></span></summary><div class="ans"><p class="b-m c-ink2">Most plans then allow an external review by an independent organization whose decision binds the insurer. Your denial letter lists the deadline — usually four months.</p></div></details>
+      </div>
+    </div></section>
+
+    <!-- CTA -->
+    <section class="cta"><div class="wrap cta-in reveal">
+      <h2 class="d-xl">Your denial has a deadline.<br /><em class="c-accent">Start your appeal today.</em></h2>
+      <div class="cta-b"><a class="btn btn-accent btn-lg" href="/app/new">Start your appeal — it’s free<span class="sheen"></span></a><a class="btn btn-dark btn-lg" href="/app/rights">Know your rights</a></div>
+    </div></section>
+  </main>
+
+  <footer class="foot"><div class="wrap foot-in">
+    <div class="foot-l"><a class="logo" href="/"><span class="logo-mark"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span>AppealPilot</a>
+      <p class="b-s c-muted">AppealPilot drafts documents to help you exercise your appeal rights. It is not legal or medical advice.</p>
+      <p class="mono c-muted">Built for the Nebius × NVIDIA Global AI Hackathon · MIT licensed</p></div>
+    <div><p class="caps">Product</p><a href="/app/new">Start an appeal</a><a href="/app">Dashboard</a><a href="#features">Workspace</a></div>
+    <div><p class="caps">Learn</p><a href="/app/rights">Know your rights</a><a href="#how">How it works</a><a href="#faq">FAQ</a></div>
+    <div><p class="caps">Technology</p><a href="/app/technology">Model routing</a><a href="/app/technology">Guardrails</a><a href="https://github.com/" target="_blank" rel="noopener">GitHub</a></div>
+  </div></footer>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/landing.js"></script>
+</body>
+</html>
