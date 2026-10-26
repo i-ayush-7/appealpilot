@@ -118,12 +118,19 @@ _live_runs = asyncio.Semaphore(max(1, settings.max_concurrent_runs))
 
 def _client_ip(request: Request) -> str:
     """The visitor's address. X-Forwarded-For is client-controlled, so it is only used when
-    TRUST_PROXY is set, and then only its last entry (the one our own proxy appended)."""
-    if settings.trust_proxy:
-        fwd = request.headers.get("x-forwarded-for", "")
-        if fwd.strip():
-            return fwd.split(",")[-1].strip()
+    TRUST_PROXY names the entry our own proxy controls ("first" or "last")."""
+    fwd = [p.strip() for p in request.headers.get("x-forwarded-for", "").split(",") if p.strip()]
+    if fwd and settings.trust_proxy == "first":
+        return fwd[0]
+    if fwd and settings.trust_proxy == "last":
+        return fwd[-1]
     return request.client.host if request.client else "unknown"
+
+
+@app.get("/api/whoami")
+async def whoami(request: Request):
+    """Echo the caller's own IP as the rate limiter sees it (used to verify proxy settings)."""
+    return {"ip": _client_ip(request), "trust_proxy": settings.trust_proxy or "off"}
 
 
 def _rate_limit(request: Request, kind: str, per_hour: int, message: str) -> None:

@@ -45,8 +45,11 @@ class Settings:
     daily_spend_usd: float = field(default_factory=lambda: _float("DAILY_SPEND_USD", 1.5))
     intakes_per_hour: int = field(default_factory=lambda: int(os.getenv("INTAKES_PER_HOUR", "30")))
     max_concurrent_runs: int = field(default_factory=lambda: int(os.getenv("MAX_CONCURRENT_RUNS", "2")))
-    # Only trust X-Forwarded-For when deployed behind a proxy that sets it (the last hop is the real client).
-    trust_proxy: bool = field(default_factory=lambda: os.getenv("TRUST_PROXY", "").lower() in ("1", "true", "yes"))
+    # Which X-Forwarded-For entry identifies the visitor. Off unless behind a proxy that sets it:
+    #   "last" (or "1")  the proxy appends the client IP (nginx, most load balancers)
+    #   "first"          the proxy overwrites the first entry with the client IP (Render)
+    trust_proxy: str = field(default_factory=lambda: {"1": "last", "true": "last", "yes": "last"}.get(
+        os.getenv("TRUST_PROXY", "").lower(), os.getenv("TRUST_PROXY", "").lower()))
 
     @property
     def tiers(self) -> dict:

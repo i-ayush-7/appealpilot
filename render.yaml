@@ -1,0 +1,46 @@
+# Render Blueprint: one free Docker web service, auto-deployed from main.
+# NEBIUS_API_KEY is not stored here — Render asks for it when the Blueprint is created.
+services:
+  - type: web
+    name: appealpilot
+    runtime: docker
+    plan: free
+    repo: https://github.com/i-ayush-7/appealpilot
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: NEBIUS_API_KEY
+        sync: false
+      - key: MODEL_NANO
+        value: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
+      - key: MODEL_SUPER
+        value: nvidia/nemotron-3-super-120b-a12b
+      - key: MODEL_ULTRA
+        value: nvidia/Nemotron-3-Ultra-550b-a55b
+      # Credit protection for a public URL (see README → Running a public demo safely)
+      - key: DAILY_SPEND_USD
+        value: "1.5"
+      - key: MAX_SPEND_USD
+        value: "5"
+      - key: RUNS_PER_HOUR
+        value: "6"
+      - key: INTAKES_PER_HOUR
+        value: "30"
+      - key: MAX_CONCURRENT_RUNS
+        value: "2"
+      # Render's proxy sets the first X-Forwarded-For entry to the real client IP.
+      - key: TRUST_PROXY
+        value: first
+      - key: PRICE_NANO_IN
+        value: "0.06"
+      - key: PRICE_NANO_OUT
+        value: "0.24"
+      - key: PRICE_SUPER_IN
+        value: "0.30"
+      - key: PRICE_SUPER_OUT
+        value: "0.90"
+      - key: PRICE_ULTRA_IN
+        value: "1.00"
+      - key: PRICE_ULTRA_OUT
+        value: "3.00"
