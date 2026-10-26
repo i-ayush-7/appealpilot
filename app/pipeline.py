@@ -111,7 +111,10 @@ async def run_appeal(denial: str, policy: str, records: str, notes: str) -> Asyn
         yield _event("stage", stage="retrieve", status="done", data={"clauses": clauses})
 
         records = records[:MAX_RECORDS]
-        case = prompts.case_block(intake, clauses, records, notes)
+        # days_left changes every day; keeping it out of prompts keeps them (and their cache keys)
+        # stable. The fixed deadline date is still included.
+        stable_intake = {k: v for k, v in intake.items() if k != "days_left"}
+        case = prompts.case_block(stable_intake, clauses, records, notes)
 
         # 3. Evidence — Super
         yield _event("stage", stage="evidence", status="running")
