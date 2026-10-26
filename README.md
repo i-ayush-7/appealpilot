@@ -98,7 +98,7 @@ appealpilot/
 Requires Python 3.11+.
 
 ```bash
-git clone <this repo> && cd appealpilot
+git clone https://github.com/i-ayush-7/appealpilot.git && cd appealpilot
 pip install -r requirements.txt
 cp .env.example .env        # paste your NEBIUS_API_KEY
 uvicorn app.main:app --reload --port 8000
