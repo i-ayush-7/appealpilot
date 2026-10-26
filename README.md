@@ -4,7 +4,7 @@
 AppealPilot runs NVIDIA Nemotron on Nebius Token Factory. Each step goes to the cheapest model that can do it well.
 
 > Track: **Best Apps and Agents** · Nebius x NVIDIA Global AI Hackathon
-> Live demo: `<add your deployed URL>` · Video: `<add YouTube link>`
+> Live demo: **https://appealpilot-rgu0.onrender.com** (free tier — the first visit after ~15 min idle takes ~50s to wake) · Video: `<add YouTube link>`
 
 ---
 
@@ -130,8 +130,13 @@ docker build -t appealpilot .
 docker run -p 8000:8000 -e NEBIUS_API_KEY=... appealpilot
 ```
 
-To serve it from **Nebius Serverless Endpoints**, push the image to Nebius Container Registry, then create an endpoint from it
-with port `8000` and `NEBIUS_API_KEY` set as a secret environment variable. *(Add the exact commands you used here.)*
+**Render (the live demo).** `render.yaml` is a Blueprint: in Render, *New → Blueprint →* this repo, paste
+`NEBIUS_API_KEY` when asked, deploy. Every push to `main` redeploys. It runs the free plan with all safeguards on and
+`TRUST_PROXY=cloudflare` (Render is fronted by Cloudflare; verified that spoofed `X-Forwarded-For` / `CF-Connecting-IP`
+headers can't create new visitor identities).
+
+**Nebius Serverless.** The same image runs as a CPU endpoint: `nebius ai endpoint create --image <image> --platform cpu-d3
+--preset 4vcpu-16gb --container-port 8000 --env-secret NEBIUS_API_KEY=<secret> --auth none`.
 
 ## Running a public demo safely
 

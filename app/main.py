@@ -132,33 +132,6 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-@app.get("/api/debug/sample-prompt/{sample_id}")
-async def sample_prompt(sample_id: str):
-    """The case block a *sample* builds before the evidence step, plus the exact cache key inputs.
-    Fictional sample data only; intake replays from the seed cache. Used to check cache stability."""
-    from . import prompts as P
-    from .pipeline import MAX_RECORDS, run_intake as _ri
-    from .retrieval import rank, split_clauses
-
-    s = get_sample(sample_id)
-    if not s:
-        raise HTTPException(404, "Unknown sample")
-    intake_data, t = await _ri(s["denial"], s["policy"])
-    queries = [str(intake_data.get("service") or ""), str(intake_data.get("denial_reason_quoted") or ""),
-               str(intake_data.get("category") or "").replace("_", " "), s["notes"][:500]]
-    clauses = [{"id": c.id, "title": c.title, "text": c.text} for c, _ in rank(split_clauses(s["policy"]), queries)]
-    stable = {k: v for k, v in intake_data.items() if k != "days_left"}
-    case = P.case_block(stable, clauses, s["records"][:MAX_RECORDS], s["notes"])
-    model = router.models.get("super")
-    key = router.guard.key(model, P.EVIDENCE_SYSTEM, case, True, False, 2500, 0.3)
-    from .llm import SEED_DIR
-
-    seed_file = SEED_DIR / f"{key}.json"
-    return {"intake_cached": t.cached, "model": model, "key": key,
-            "seed_dir": str(SEED_DIR), "seed_files": len(list(SEED_DIR.glob("*.json"))) if SEED_DIR.exists() else -1,
-            "seed_hit": seed_file.exists(), "guard_get": router.guard.get(key) is not None, "case": case}
-
-
 @app.get("/api/whoami")
 async def whoami(request: Request):
     """Echo the caller's own IP as the rate limiter sees it (used to verify proxy settings)."""
