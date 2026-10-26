@@ -217,7 +217,11 @@ function rewriteLetter(newText, oldText) {
 }
 
 function notesFrom(review) {
-  return [...(review?.factual_errors || []).map((f) => ({ issue: f, severity: "high" })), ...(review?.weaknesses || [])].slice(0, 5);
+  // The reviewer sometimes reports one problem as both a factual error and a weakness; show it once.
+  const seen = new Set();
+  return [...(review?.factual_errors || []).map((f) => ({ issue: f, severity: "high" })), ...(review?.weaknesses || [])]
+    .filter((w) => { const k = String(w.issue).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().slice(0, 60); if (seen.has(k)) return false; seen.add(k); return true; })
+    .slice(0, 5);
 }
 function renderNotes(animate = true) {
   const m = $("#margin"); if (!m) return;
