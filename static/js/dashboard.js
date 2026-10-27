@@ -40,7 +40,7 @@ function render() {
     ["folder", "Active appeals", active.length, (v) => Math.round(v), ready ? `${ready} ready to send` : "None ready yet", "brand-tint"],
     ["dollar", "Amount at stake", stake, (v) => money(v), `across ${active.length} claim${active.length === 1 ? "" : "s"}`, "super"],
     ["clock", "Next deadline", next ? next.d : null, (v) => `${Math.round(v)} days`, next ? `${next.c.insurer} · ${next.c.title}` : "No open deadlines", "ultra"],
-    ["gauge", "Avg. win likelihood", avg, (v) => Math.round(v), lifts.length ? `+${Math.round(lifts.reduce((a, b) => a + b, 0) / lifts.length)} pts after revision` : scored.length ? "from Ultra’s review" : "Run a case to see it", "nano"],
+    ["gauge", "Avg. win likelihood", avg, (v) => Math.round(v), lifts.length ? signed(Math.round(lifts.reduce((a, b) => a + b, 0) / lifts.length)) + " pts after revision" : scored.length ? "from Ultra’s review" : "Run a case to see it", "nano"],
   ];
   $("#kpis").innerHTML = K.map(([i, k, , , sub, tone], n) => `<div class="card kpi"><div class="kpi-top"><span class="tile bg-${tone === "brand-tint" ? "brand-tint" : tone}" style="width:32px;height:32px;border-radius:9px">${ic(i)}</span><span class="l-s c-ink2">${k}</span></div>
       <span class="v" data-k="${n}">—</span><span class="b-s c-muted">${esc(sub)}</span></div>`).join("");

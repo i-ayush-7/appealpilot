@@ -15,6 +15,7 @@ const TABS = [["letter", "Letter"], ["evidence", "Evidence"], ["review", "Insure
 
 const params = new URLSearchParams(location.search);
 let C = null;                 // the case record
+const REPLAY = new URLSearchParams(location.search).get("replay") === "1"; // paced replay for demo recordings
 let R = null;                 // result being built / loaded
 let tab = "letter", version = "final", showDiff = true, editing = false, running = false;
 const stepState = {};
@@ -46,11 +47,12 @@ function setStatus(s, msg) { C.status = s; Store.save(C); renderHeader(); toast(
 function renderPipe() {
   $("#pipe").innerHTML = STAGES.map((s) => `<div class="pst ${stepState[s.id]?.st || ""}" id="p-${s.id}" style="--tc:${TC[s.tier]}">
       <span class="dot">${ic("check")}</span><span style="min-width:0"><span class="nm" style="display:block">${s.name}</span><span class="mt">${stepState[s.id]?.meta || s.tier}</span></span></div>`).join("")
-    + `<div class="pipe-sum"><span class="mono-m" id="sumCost">${!R?.totals ? "—" : R.replayed ? "$0 · cached" : usd(R.totals.cost) + " · " + secs(R.totals.ms)}</span><span class="b-s c-brand6" id="sumSave">${R?.totals ? `${Math.round(R.totals.savings)}% less than all-Ultra` : "Nemotron on Nebius"}</span></div>`;
+    + `<div class="pipe-sum"><span class="mono-m" id="sumCost">${!R?.totals ? "—" : R.replayed && REPLAY ? usd(R.totals.cost) + " per appeal" : R.replayed ? "$0 · cached" : usd(R.totals.cost) + " · " + secs(R.totals.ms)}</span><span class="b-s c-brand6" id="sumSave">${R?.totals ? `${Math.round(R.totals.savings)}% less than all-Ultra` : "Nemotron on Nebius"}</span></div>`;
 }
 /** One-line run summary. Cached replays say so plainly instead of showing a cost that wasn't charged. */
 function runSummary(lead) {
   const calls = R.totals?.calls ?? (R.traces || []).length;
+  if (R.replayed && REPLAY) return `${lead} ${calls} Nemotron calls · ${usd(R.totals?.cost)} per appeal · ${Math.round(R.totals?.savings ?? 0)}% less than all-Ultra`;
   if (R.replayed) return `${lead} ${calls} Nemotron calls · replayed from cache, no credits spent (original run ${usd(R.totals?.cost)})`;
   return `${lead} ${calls} Nemotron calls · ${usd(R.totals?.cost)} · ${secs(R.totals?.ms || 0)}${R.totals?.savings != null ? ` · ${Math.round(R.totals.savings)}% less than all-Ultra` : ""}`;
 }
@@ -264,7 +266,7 @@ function renderReviewTab() {
   $("#panel").innerHTML = `<div style="display:flex;flex-direction:column;gap:16px">
     <div class="compare-scores">
       <div><span class="caps c-muted">${r2 ? "First draft" : "Score"}</span><div class="v c-${scoreTone(r1.score)}">${r1.score}</div><span class="b-s c-muted">${esc(r1.verdict === "ready" ? "Ready as written" : "Needed revision")}</span></div>
-      ${r2 ? `<div><span class="caps c-muted">After revision</span><div class="v c-${scoreTone(r2.score)}">${r2.score}</div><span class="pill pill-good">▲ ${r2.score - r1.score >= 0 ? "+" : ""}${r2.score - r1.score} pts</span></div>` : `<div><span class="caps c-muted">Revision</span><div class="v c-muted">—</div><span class="b-s c-muted">Not needed: no factual errors or high-severity issues.</span></div>`}
+      ${r2 ? `<div><span class="caps c-muted">After revision</span><div class="v c-${scoreTone(r2.score)}">${r2.score}</div>${deltaPill(r2.score - r1.score, " pts")}</div>` : `<div><span class="caps c-muted">Revision</span><div class="v c-muted">—</div><span class="b-s c-muted">Not needed: no factual errors or high-severity issues.</span></div>`}
     </div>
     ${fin.insurer_rebuttal ? `<div class="rebut"><span class="caps c-ultra">What their reviewer could still say</span><p>“${esc(fin.insurer_rebuttal)}”</p></div>` : ""}
     ${(fin.strengths || []).length ? `<div class="card card-pad"><h3 class="h-s" style="margin-bottom:12px">Strengths</h3><ul class="checklist">${fin.strengths.map((s, i) => `<li class="have" style="--d:${i * 0.06}s"><span class="bx">${ic("check")}</span>${esc(s)}</li>`).join("")}</ul></div>` : ""}
@@ -305,7 +307,7 @@ function renderRail() {
   $("#rail").innerHTML = `
     <div class="card gauge-card"><div style="display:flex;align-items:center;justify-content:space-between"><h3 class="h-s">Win likelihood</h3><span class="tier t-ultra">Ultra review</span></div>
       <div class="gauge-wrap" id="gauge">${gaugeSVG(240)}<span class="gauge-num" id="gNum">${fin ? fin.score : "–"}</span></div>
-      <div class="gauge-meta"><span id="gLabel">${fin ? (fin.score >= 85 ? "Strong — ready to send" : fin.score >= 70 ? "Promising — needs work" : "Weak as written") : running ? "Waiting for the review" : "Not reviewed yet"}</span>${R?.rescore ? `<span class="pill pill-good">▲ ${R.rescore.score - R.review.score >= 0 ? "+" : ""}${R.rescore.score - R.review.score}</span>` : ""}</div>
+      <div class="gauge-meta"><span id="gLabel">${fin ? (fin.score >= 85 ? "Strong — ready to send" : fin.score >= 70 ? "Promising — needs work" : "Weak as written") : running ? "Waiting for the review" : "Not reviewed yet"}</span>${R?.rescore ? `${deltaPill(R.rescore.score - R.review.score)}` : ""}</div>
       ${fin?.insurer_rebuttal ? `<div class="rebut"><span class="caps c-ultra">What their reviewer could still say</span><p>“${esc(fin.insurer_rebuttal)}”</p></div>` : ""}
     </div>
     <div class="card card-pad"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><h3 class="h-s">Enclose with your letter</h3><span class="mono c-muted">${ev ? `${(ev.checklist || []).filter((c) => c.status === "have").length}/${(ev.checklist || []).length}` : ""}</span></div>
@@ -327,7 +329,8 @@ async function handle(ev) {
     const cost = R.traces.reduce((s, t) => s + t.cost_usd, 0), ultra = R.traces.reduce((s, t) => s + t.ultra_cost_usd, 0);
     tween($("#sumCost"), cost, { dur: 600, fmt: (v) => usd(v) });
     $("#sumSave").textContent = ultra ? `${Math.round(100 * (1 - cost / ultra))}% less than all-Ultra` : "";
-    setStep(ev.stage, stepState[ev.stage]?.st || "run", `${ev.tier} · ${secs(ev.latency_ms)}${ev.cached ? " · cached" : ""}`);
+    // In paced replays the real latency of a cached call is 0ms, so show the tier only rather than a made-up time.
+    setStep(ev.stage, stepState[ev.stage]?.st || "run", REPLAY && ev.cached ? ev.tier : `${ev.tier} · ${secs(ev.latency_ms)}${ev.cached ? " · cached" : ""}`);
     if (tab === "routing") renderRoutingTab();
     return;
   }
@@ -393,16 +396,23 @@ async function run() {
     let inputs = C.inputs;
     if (C.sample) { const s = await (await fetch(`/api/samples/${encodeURIComponent(C.sample)}`)).json(); inputs = { denial: s.denial, policy: s.policy, records: s.records, notes: s.notes }; }
     if (!inputs?.denial) throw new Error("This case has no denial letter. Start a new appeal instead.");
-    await streamPost("/api/appeal", inputs, handle);
+    // ?replay=1 paces a cached run like a live one (used for demo recordings): each model step
+    // "thinks" for a realistic moment before its result lands.
+    const pace = REPLAY ? { intake: 900, evidence: 1900, draft: 1800, review: 5800, revise: 4300, rescore: 3600 } : null;
+    await streamPost("/api/appeal", inputs, async (ev) => {
+      if (pace && ev.type === "trace") await sleep(pace[ev.stage] || 800);
+      if (pace && ev.type === "stage" && ev.stage === "retrieve" && ev.status === "running") await sleep(600);
+      return handle(ev);
+    });
     if (!R.review) throw new Error("The run ended early. Please try again.");
     const fin = R.rescore || R.review;
     R.ready = fin.score >= 85 && !(fin.factual_errors || []).length;
     C.status = R.ready ? "ready" : "needs";
     C.score = fin.score; C.firstScore = R.review.score;
+    R.replayed = R.traces.length > 0 && R.traces.every((t) => t.cached);
     saveResult();
     running = false;
     renderHeader();
-    R.replayed = R.traces.length > 0 && R.traces.every((t) => t.cached);
     status(runSummary("Appeal ready ·"), "nano", true);
     renderPipe();
     if (R.ready && tab === "letter") { await sleep(REDUCED ? 0 : 500); $("#stamp")?.classList.add("go"); }
@@ -439,7 +449,7 @@ function confetti() {
   R = C.result || null;
   if (R) {
     STAGES.forEach((s) => (stepState[s.id] = { st: "done", meta: s.tier }));
-    for (const t of R.traces || []) stepState[t.stage] = { st: "done", meta: `${t.tier} · ${secs(t.latency_ms)}` };
+    for (const t of R.traces || []) stepState[t.stage] = { st: "done", meta: REPLAY && t.cached ? t.tier : `${t.tier} · ${secs(t.latency_ms)}` };
     if (R.clauses) stepState.retrieve = { st: "done", meta: `${R.clauses.length} clauses` };
     if (R.keptOriginal != null) { stepState.revise = { st: "skip", meta: `scored ${R.keptOriginal}` }; stepState.rescore = { st: "done", meta: "kept draft" }; }
     else if (!R.rescore) { stepState.revise = { st: "skip", meta: "not needed" }; stepState.rescore = { st: "skip", meta: "not needed" }; }

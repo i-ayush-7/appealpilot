@@ -58,6 +58,8 @@ const daysUntil = (iso) => (iso ? Math.round((new Date(iso + "T00:00:00") - new 
 const fmtDate = (iso, opts = { month: "short", day: "numeric", year: "numeric" }) => (iso ? new Date(iso + "T00:00:00").toLocaleDateString(undefined, opts) : "—");
 const isoIn = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const scoreTone = (s) => (s >= 85 ? "nano" : s >= 70 ? "super" : "ultra");
+const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "±0");
+const deltaPill = (d, unit = "") => `<span class="pill ${d >= 0 ? "pill-good" : "pill-bad"}">${d >= 0 ? "▲" : "▼"} ${signed(d)}${unit}</span>`;
 const STATUS = { draft: ["Drafting", "s-draft"], running: ["Building", "s-running"], ready: ["Ready to send", "s-ready"], needs: ["Needs info", "s-needs"], sent: ["Submitted", "s-sent"], won: ["Overturned", "s-won"] };
 const statusPill = (s) => `<span class="status ${STATUS[s]?.[1] || ""}">${STATUS[s]?.[0] || s}</span>`;
 

@@ -1,6 +1,9 @@
 "use strict";
 /* New appeal wizard: 5 steps, uploads, live Nano intake preview, then hand-off to the case workspace. */
 
+// ?replay=1 (demo recordings only): paces cached sample reads so they look the way a live run does.
+const REPLAY = new URLSearchParams(location.search).get("replay") === "1";
+
 const STEPS = [
   { key: "denial", label: "Denial letter", title: "Let’s start with the denial letter.", sub: "Upload the letter or Explanation of Benefits your insurer sent. Nemotron Nano reads it in about a second.", required: true,
     drop: "Drop your denial letter here", ph: "Paste the full denial letter or Explanation of Benefits…" },
@@ -115,7 +118,7 @@ function renderFound(mode) {
       : kind.startsWith("chip") ? `<span><span class="tier ${kind === "chip-u" ? "t-ultra" : "t-nano"}" style="text-transform:none;letter-spacing:0;font-weight:500;font-size:13px">${esc(v)}</span></span>`
       : `<span class="v ${kind}">${esc(v)}</span>`}</div>`).join("")}
     ${d.urgent ? `<div class="frow"><span class="tier t-ultra" style="text-transform:none;letter-spacing:0;font-size:13px">Urgent care — ask for an expedited appeal</span></div>` : ""}
-    <div class="found-foot"><span class="b-s c-ink2 grow">${S.intakeTrace ? `Read by Nano in ${secs(S.intakeTrace.latency_ms)}${S.intakeTrace.cached ? " (cached)" : ""}` : "Something off? You can edit the letter."}</span></div>`;
+    <div class="found-foot"><span class="b-s c-ink2 grow">${S.intakeTrace ? (REPLAY ? "Read by NVIDIA Nemotron Nano" : `Read by Nano in ${secs(S.intakeTrace.latency_ms)}${S.intakeTrace.cached ? " (cached)" : ""}`) : "Something off? You can edit the letter."}</span></div>`;
 }
 
 async function runIntake() {
@@ -127,6 +130,8 @@ async function runIntake() {
     const res = await fetch("/api/intake", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ denial, policy: S.docs.policy }) });
     const body = await res.json();
     if (!res.ok) throw new Error(body.detail || "Intake failed");
+    // ?replay=1 (demo recordings): a cached read is instant, so give Nano a visible moment to "read".
+    if (REPLAY && body.trace?.cached) await sleep(1300);
     S.intake = body.intake;
     S.intakeTrace = body.trace;
   } catch (e) {
